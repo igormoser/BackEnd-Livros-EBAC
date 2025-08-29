@@ -1,7 +1,14 @@
 from fastapi import FastAPI,HTTPException
+from pydantic import BaseModel
+from typing import Optional
 app = FastAPI()
 
 lista_livros = {}
+
+class Livro(BaseModel):
+    nome_livro: str
+    autor_livro: str
+    ano_livro: int
 
 @app.get("/livros")
 def get_livros():
@@ -10,25 +17,20 @@ def get_livros():
     else:
         return {"Livros": lista_livros}
 @app.post("/adicionar")
-def post_livros(id_livro: int, nome_livro: str, autor_livro: str, ano_livro: str):
+def post_livros(id_livro: int, livro: Livro):
     if id_livro in lista_livros:
         raise HTTPException(status_code=400, detail="Este livro já existe na lista!")
     else:
-        lista_livros[id_livro] = {"nome_livro": nome_livro, "autor_livro": autor_livro, "ano_livro": ano_livro}
+        lista_livros[id_livro] = livro.model_dump()
         return {"message": "O livro foi adicionado com sucesso!"}
 
 @app.put("/atualizar/{id_livro}")
-def put_livros(id_livro: int, nome_livro: str, autor_livro: str, ano_livro: str):
+def put_livros(id_livro: int, livro: Livro):
     meu_livro = lista_livros.get(id_livro)
     if not meu_livro:
         raise HTTPException(status_code=404, detail="Este livro não foi encontrado!")
     else:
-        if nome_livro:
-            meu_livro["nome_livro"] = nome_livro
-        if autor_livro:
-            meu_livro["autor_livro"] = autor_livro
-        if ano_livro:
-            meu_livro["ano_livro"] = ano_livro
+        meu_livro[id_livro] = livro.model_dump()
         return {"message": "O livro foi atualizado com sucesso!"}
 
 @app.delete("/deletar/{id_livro}")
