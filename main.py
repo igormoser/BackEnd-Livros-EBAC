@@ -30,7 +30,7 @@ def put_livros(id_livro: int, livro: Livro):
     if not meu_livro:
         raise HTTPException(status_code=404, detail="Este livro não foi encontrado!")
     else:
-        meu_livro[id_livro] = livro.model_dump()
+        lista_livros[id_livro] = livro.model_dump()
         return {"message": "O livro foi atualizado com sucesso!"}
 
 @app.delete("/deletar/{id_livro}")
