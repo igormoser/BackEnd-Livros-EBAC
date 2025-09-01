@@ -60,10 +60,22 @@ def remover_tarefas(nome: str):
             return {"mensagem": "Tarefa removida com sucesso!", "tarefa": tarefa}
     raise HTTPException(status_code=404, detail="Tarefa não encontrada!")
 @app.get("/livros")
-def get_livros(credentials: HTTPBasicCredentials = Depends(autenticar_meu_usuario)):
-    if not lista_livros:
-        return {"mensagem": "Nenhum livro encontrado!"}
-    return {"Livros": lista_livros}
+def get_livros(page: int = 1, limit: int = 10, credentials: HTTPBasicCredentials = Depends(autenticar_meu_usuario)):
+    if page < 1 or limit < 1:
+        raise HTTPException(status_code=400, detail="Página ou Limite inválido!")
+    start = (page - 1) * limit
+    end = start + limit
+
+    livros_paginados = [
+        {"id": id_livro, "nome_livro": livro_data["nome_livro"], "autor_livro": livro_data["autor_livro"], ano_livro: livro_data["ano_livro"]}
+        for id_livro, livro_data in livros_ordenados[start:end]]
+
+    livros_ordenados = sorted(lista_livros.items(), key=lambda item: item[0])
+    return { "page": page,
+            "limit": limit,
+            "total": len(lista_livros),
+            "livros": livros_paginados,}
+
 @app.post("/adicionar")
 def post_livros(id_livro: int, livro: Livro, credentials: HTTPBasicCredentials = Depends(autenticar_meu_usuario)):
     if id_livro in lista_livros:
